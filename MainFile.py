@@ -1,51 +1,72 @@
+from urllib.request import urlopen
+from urllib.parse import urlencode
+import json
+import requests
+import facebook
 from bs4 import BeautifulSoup
-import json, random, re, requests
+from selenium import webdriver
 
-BASE_URL = 'https://www.instagram.com/accounts/login/'
-LOGIN_URL = BASE_URL + 'ajax/'
+app_id = '376395939967416'
+app_secret = '52edfbb8fb4f9c59a64613b81b5efc9a'
+access_token = 'EAAXyo9tHpYgBAJxwRa4rCFo0gVeKhgZA1rqyWAQr2ww4gi0ORYOHxhkZBIRmn2tEXVXKHvDPxVsnpZCxMtZCdQpQtnMuJpDQMeIWKJ9hbgVffhlh0sCAqHrxOGpT4M30ManQGFTJP05ALE6OquQiiPEBSMZCWdxYxalBlGfieE4f3JbZBnQTnU'
+redirect_uri = 'http://www.localhost'
+graph_uri = 'https://graph.facebook.com'
+login_uri = 'https://www.facebook.com/login/'
+facebook_uri = 'https://www.facebook.com/'
+user_name = 'sean.kagamine'
 
-headers_list = [
-        "Mozilla/5.0 (Windows NT 5.1; rv:41.0) Gecko/20100101"\
-        " Firefox/41.0",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2)"\
-        " AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2"\
-        " Safari/601.3.9",
-        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0)"\
-        " Gecko/20100101 Firefox/15.0.1",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"\
-        " (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36"\
-        " Edge/12.246"
-        ]
+username = 'k3ndrik_wah@yahoo.com.sg'
+password = 'xxxxxxxxx'
 
-USERNAME = 'kendrik_wah@yahoo.com.sg'
-PASSWD = 'x'
-USER_AGENT = headers_list[random.randrange(0,4)]
+# req = requests.get(graph_uri + '/me' + '&access_token=' + access_token)
+# identity_no = req.json()
+# print(req.json())
 
-session = requests.Session()
-session.headers = {'user-agent': USER_AGENT}
-session.headers.update({'Referer': BASE_URL})
-req = session.get(BASE_URL)
-soup = BeautifulSoup(req.content, 'html.parser')
-body = soup.find('body')
+req = requests.Session()
+test = req.get(facebook_uri + user_name)
+print(test.text)
 
-pattern = re.compile('window._sharedData')
-script = body.find("script", text=pattern)
+# req2 = requests.get(graph_uri + '/' + identity_no + '?fields=feed&access_token=' + access_token)
+# print(req2.json())
 
-script = script.get_text().replace('window._sharedData = ', '')[:-1]
-data = json.loads(script)
+##################################################################################################################
 
-csrf = data['config'].get('csrf_token')
-login_data = {'username': USERNAME, 'password': PASSWD}
-session.headers.update({'X-CSRFToken': csrf})
-login = session.post(LOGIN_URL, data=login_data, allow_redirects=True)
-print(login.content)
-print(login)
+# req = requests.get('https://www.facebook.com/sean.kagamine')
+# txt = req.text
+# doc = BeautifulSoup(txt, 'html.parser')
+# print(doc.prettify)
 
-print(" ")
-print(" ")
-new_session = requests.Session()
-accessing_eatbook_instagram = new_session.get("https://www.instagram.com/xxx/")
-new_soup = BeautifulSoup(accessing_eatbook_instagram.content, 'html.parser')
-new_body = soup.find('body')
+# graph = facebook.GraphAPI(access_token)
 
-print(new_body)
+###################################################################################################################
+
+# Get User Token
+# def get_user_token(
+#     username,
+#     password
+# ):
+#     browser = webdriver.Chrome(r'C:\Program Files\JetBrains\PyCharm Community Edition 2019.2.2\bin\chromedriver.exe')
+#     GraphAPIExplorer = 'https://developers.facebook.com/tools/explorer'
+#     browser.get(GraphAPIExplorer)
+#     login = browser.find_element_by_link_text('Log In')
+#     login.click()
+#     email = browser.find_element_by_name('email')
+#     email.send_keys(username)
+#     pwrd = browser.find_element_by_name('pass')
+#     pwrd.send_keys(password)
+#     login = browser.find_element_by_name('login')
+#     login.click()
+#     page = BeautifulSoup(browser.page_source,'lxml')
+#     browser.quit()
+#     token_element = [item for item in page.select('input[type="text"]')
+#         if 'placeholder' in item.attrs
+#         and 'Access Token' in item['placeholder']]
+#     token = token_element[0]['value']
+#     return token
+#
+# token = get_user_token('k3ndrik_wah@yahoo.com.sg', 'Gymnopedie123!')
+#
+# print(token)
+
+###################################################################################################################
+
