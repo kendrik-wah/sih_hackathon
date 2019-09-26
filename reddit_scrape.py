@@ -1,4 +1,4 @@
-import praw
+import praw, json
 
 class RedditTarget(object):
 
@@ -10,25 +10,42 @@ class RedditTarget(object):
                                   client_secret=self.secret,
                                   user_agent=self.user_agent)
 
-    def search_subreddit(self, term, params='all'):
-        if params == 'all':
-            return self.reddit.subreddit(term).top(params)
-        else:
-            return self.reddit.subreddit(term).top(limit=params)
+    def search_subreddit(self, term, params=20):
+        return self.reddit.subreddit(term).top(limit=params)
 
-    def get_posts_info(self, term, qty):
-        result = {}
-        search_result = self.search_subreddit(term, qty)
-        for term in search_result:
-            if term.author not in list(result.keys()):
-                result[term.author] = []
+    def get_posts_info(self, term):
+        results = []
+        search_result = self.search_subreddit(term)
 
-            result[term.author] = {'id': term.id,
-                                   'title': term.title,
-                                   'text': term.selftext,
-                                   'comments': term.comments.list(),
-                                   'url': term.url}
-        return result
+        for seek in search_result:
 
-test = RedditTarget()
-test.get_posts_info('anxiety')
+            author = 'anonymous'
+            title = seek.title
+            text = seek.selftext
+            comments = seek.comments.list()
+
+            if seek.author is not None:
+                author = seek.author.name
+
+            result = {'author': author,
+                      'title': title,
+                      'text': text,
+                      'comments': comments}
+            results.append(result)
+
+        return results
+
+    def scrape(self, mental_illnesses):
+        reddit_results = {}
+
+        for mental_illness in mental_illnesses:
+            reddit_results[mental_illness] = []
+
+            reddit_search = self.get_posts_info(mental_illness)
+            reddit_results[mental_illness] = list(map(lambda x: x['text'], reddit_search))
+
+            filename = 'reddit_' + mental_illness + '.json'
+            with open(filename, 'w', encoding='utf-8') as f:
+                for result in reddit_results[mental_illness]:
+                    f.write(json.dumps(result) + '\n')
+                f.close()
