@@ -169,35 +169,36 @@ class InstagramScrape(object):
             print("currently handling Instagram information:")
             ig_result = self.search_results(mental_illness)
             handle_feed_lst = {}
+
             for handle in ig_result:
+                handle_feed_lst[handle['id']] = []
                 handle_feed = self.get_user_feed(handle['username'], handle['id'])
 
                 if type(handle_feed) is not ClientError:
-                    if handle['id'] not in list(handle_feed_lst.keys()):
-                        handle_feed_lst[handle['id']] = []
                     handle_feed_lst[handle['id']].extend(handle_feed)
 
             users = list(handle_feed_lst.keys())
+            carousel_ids = []
+
             for user in users:
-                posts = list(map(lambda x: x['text'], handle_feed_lst[user]))
-                posts = list(filter(lambda x: len(x) != 0, posts))
-                media = list(map(lambda x: x['url'], handle_feed_lst[user]))
-                if len(posts) < 5:
-                    search_result = {'id': user,
-                                     'texts': posts,
-                                     'media': media}
-                else:
-                    search_result = {'id': user,
-                                     'texts': posts[0:5],
-                                     'media': media[0:5]}
+                posts = handle_feed_lst[user]
+                for post in posts:
+                    print(post)
+                    if post['carousel_parent_id'] in carousel_ids:
+                        continue
+                    else:
+                        print(post['carousel_parent_id'])
+                        carousel_ids.append(post['carousel_parent_id'])
 
-                instagram_results[mental_illness].append(search_result)
+                        search_result = {'id': user,
+                                         'text': post['text'],
+                                         'media': post['url']}
+                        instagram_results[mental_illness].append(search_result)
 
+            print(instagram_results[mental_illness])
             filename = 'instagram_' + mental_illness + '.json'
             with open(filename, 'w', encoding='utf-8') as f:
-                for comment in instagram_results[mental_illness]:
-                    f.write(json.dumps(comment))
-                f.close()
+                json.dump(instagram_results, f)
 
             print("complete handling Instagram information.")
 

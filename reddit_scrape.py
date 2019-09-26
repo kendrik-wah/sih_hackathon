@@ -1,5 +1,7 @@
 import praw, json
 
+mental_illnesses = ['depression', 'anxiety', 'stress']
+
 class RedditTarget(object):
 
     def __init__(self):
@@ -29,8 +31,7 @@ class RedditTarget(object):
 
             result = {'author': author,
                       'title': title,
-                      'text': text,
-                      'comments': comments}
+                      'text': text}
             results.append(result)
 
         return results
@@ -39,13 +40,10 @@ class RedditTarget(object):
         reddit_results = {}
 
         for mental_illness in mental_illnesses:
-            reddit_results[mental_illness] = []
 
             reddit_search = self.get_posts_info(mental_illness)
-            reddit_results[mental_illness] = list(map(lambda x: x['text'], reddit_search))
+            reddit_results[mental_illness] = reddit_search
 
             filename = 'reddit_' + mental_illness + '.json'
             with open(filename, 'w', encoding='utf-8') as f:
-                for result in reddit_results[mental_illness]:
-                    f.write(json.dumps(result) + '\n')
-                f.close()
+                json.dump(reddit_results[mental_illness], f)

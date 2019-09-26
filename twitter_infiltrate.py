@@ -120,9 +120,7 @@ class TwitterTarget(object):
 
             filename = 'twitter_' + mental_illness + '.json'
             with open(filename, 'w', encoding='utf-8') as f:
-                for result in twitter_results[mental_illness]:
-                    f.write(json.dumps(result) + '\n')
-                f.close()
+                json.dump(twitter_results[mental_illness], f)
 
             print("complete handling Twitter information.")
 
