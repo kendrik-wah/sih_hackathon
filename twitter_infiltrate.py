@@ -11,7 +11,8 @@ class TwitterTarget(object):
         self.api = twitter.Api(consumer_key=self.consumer_API_key,
                                consumer_secret=self.consumer_secret_API_key,
                                access_token_key=self.access_token,
-                               access_token_secret=self.secret_access_token)
+                               access_token_secret=self.secret_access_token,
+                               tweet_mode='extended')
         self.target_username = your_username
         self.user = self.api.GetUser(screen_name=self.target_username)
         self.id = self.user.id
@@ -39,7 +40,6 @@ class TwitterTarget(object):
         return self.search_result
 
     def get_feed_of_others(self, username):
-
         self.results = []
 
         try:
@@ -52,9 +52,11 @@ class TwitterTarget(object):
             id = status.id
             name = status.user.screen_name
             time = status.created_at
-            text = status.text
+            text = status.full_text
             hashtags = status.hashtags
             media = status.media
+            if status.media is not None:
+                media = status.media[0].media_url
 
             if 'RT' in text:
                 other_party = ""
@@ -110,11 +112,11 @@ class TwitterTarget(object):
                 if type(self.get_results()) is TwitterError or self.get_results() is []:
                     continue
                 else:
-                    last_5_posts = list(map(lambda x: x['text'], self.results[0:5]))
-                    last_5_media = list(map(lambda x: x['media'][0].AsDict()['media_url'] if x['media'] is not None else x['media'], self.results[0:5]))
+                    last_5_posts = list(map(lambda x: x['text'], self.results))
+                    last_5_media = list(map(lambda x: x['media'] if x['media'] is not None else x['media'], self.results))
 
-                    search_result = {'user_id': user,
-                                     'texts': last_5_posts,
+                    search_result = {'id': user,
+                                     'text': last_5_posts,
                                      'media': last_5_media}
                     twitter_results[mental_illness].append(search_result)
 
@@ -124,7 +126,20 @@ class TwitterTarget(object):
 
             print("complete handling Twitter information.")
 
-# test = TwitterTarget('ChaotiqueEdge')
+    def scrape_self(self):
+        results = self.get_own_feed()
+        return results
+
+    def save_self_scraped_information(self):
+        results = self.scrape_self()
+
+        filename = 'twitter_' + self.target_username + '.json'
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(results, f)
+
+
+# test = TwitterTarget('neiltyson')
+# print(test.get_own_feed())
 
 ###############################################################################################################
 # Use search_by_parameters to obtain 20 usernames. Only the same 20 will always be obtained.                  #

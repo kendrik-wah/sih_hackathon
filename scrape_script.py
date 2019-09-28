@@ -1,19 +1,37 @@
+import re
+from os.path import join
+
 from instagram_infiltrate import InstagramScrape
 from twitter_infiltrate import TwitterTarget
 from reddit_scrape import RedditTarget
 import json
 
+import nltk
+nltk.download('vader_lexicon')
+nltk.download('punkt')
+
+from nltk import tokenize
+from nltk.classify import NaiveBayesClassifier
+from nltk.sentiment import SentimentAnalyzer
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.sentiment.util import *
+from nltk.corpus import stopwords
+from nltk.classify import SklearnClassifier
+
+sid = SentimentIntensityAnalyzer()
+
 
 def scrape():
-    instagram_handle = InstagramScrape('xxx', 'xxx')
+    # instagram_handle = InstagramScrape('xxx', 'xxx')
     twitter_handle = TwitterTarget('ChaotiqueEdge')
-    reddit_handle = RedditTarget()
-    mental_illnesses = ['depression', 'anxiety', 'stress']
+    # reddit_handle = RedditTarget()
+    mental_illnesses = ['depression']
 
-    instagram_handle.scrape(mental_illnesses)
+    # instagram_handle.scrape(mental_illnesses)
     twitter_handle.scrape(mental_illnesses)
-    reddit_handle.scrape(mental_illnesses)
+    # reddit_handle.scrape(mental_illnesses)
 
+scrape()
 
 def read_json_file(filename):
     with open(filename) as json_file:
@@ -42,11 +60,12 @@ def get_top_5_texts(lst):
     texts = {}
     use_id = True
 
+    # print(lst)
+
     try:
         val = lst[0]['id']
     except KeyError as ke:
         use_id = False
-
 
     if use_id is True:
         all_recorded_users_double_counted = list(map(lambda x: x['id'], lst))
@@ -58,6 +77,7 @@ def get_top_5_texts(lst):
         for user in all_recorded_users:
             filtered = list(filter(lambda x: x['id'] == user, lst))
             top_5 = list(filter(lambda x: len(x['text']) != 0, filtered))
+            top_5 = list(map(lambda x: x['text'], top_5))
 
             if len(top_5) > 5:
                 top_5 = top_5[0:5]
@@ -73,6 +93,7 @@ def get_top_5_texts(lst):
         for user in all_recorded_users:
             filtered = list(filter(lambda x: x['author'] == user, lst))
             top_5 = list(filter(lambda x: len(x['text']) != 0 or len(x['title']) != 0, filtered))
+            top_5 = list(map(lambda x: x['text'], top_5))
 
             if len(top_5) > 5:
                 top_5 = top_5[0:5]
@@ -81,17 +102,48 @@ def get_top_5_texts(lst):
 
     return texts
 
+def clean_tweet(tweet):
+    return join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", tweet))
 
-instagram_depression = get_top_5_texts(get_instagram_json('instagram_depression.json'))
-instagram_anxiety = get_top_5_texts(get_instagram_json('instagram_anxiety.json'))
-instagram_stress = get_top_5_texts(get_instagram_json('instagram_stress.json'))
+# instagram_depression = get_top_5_texts(get_instagram_json('instagram_depression.json'))
+# instagram_anxiety = get_top_5_texts(get_instagram_json('instagram_anxiety.json'))
+# instagram_stress = get_top_5_texts(get_instagram_json('instagram_stress.json'))
 
 twitter_depression = get_top_5_texts(get_twitter_json('twitter_depression.json'))
-twitter_anxiety = get_top_5_texts(get_twitter_json('twitter_anxiety.json'))
-twitter_stress = get_top_5_texts(get_twitter_json('twitter_stress.json'))
+# for user in list(twitter_depression.keys()):
+#     twitter_depression[user] = twitter_depression[user][0]
+#     for txt in twitter_depression[user]:
+#         print(clean_tweet(txt))
+        # txt = clean_tweet(txt)
+# twitter_anxiety = get_top_5_texts(get_twitter_json('twitter_anxiety.json'))
+# twitter_stress = get_top_5_texts(get_twitter_json('twitter_stress.json'))
 
-reddit_depression = get_top_5_texts(get_reddit_json('reddit_depression.json'))
-reddit_anxiety = get_top_5_texts(get_reddit_json('reddit_anxiety.json'))
-reddit_stress = get_top_5_texts(get_reddit_json('reddit_stress.json'))
+# reddit_depression = get_top_5_texts(get_reddit_json('reddit_depression.json'))
+# reddit_anxiety = get_top_5_texts(get_reddit_json('reddit_anxiety.json'))
+# reddit_stress = get_top_5_texts(get_reddit_json('reddit_stress.json'))
+
+def get_sentiment_percentage(sentiments):
+    results = {}
+    for user in list(sentiments.keys()):
+        summary = {'positive': 0, 'negative': 0, 'neutral': 0}
+        total = len(sentiments[user])
+        for sentiment in sentiments[user]:
+            ss = sid.polarity_scores(sentiment)
+            print(sentiment)
+            print('test:', ss)
+            if ss['compound'] == 0:
+                summary['neutral'] = summary['neutral'] + 1
+            elif ss['compound'] < 0:
+                summary['negative'] = summary['negative'] + 1
+            else:
+                summary['positive'] = summary['positive'] + 1
+        results[user] = summary
+    return results
 
 
+# print((instagram_depression))
+print((twitter_depression))
+# print((reddit_depression))
+
+# Instagram => Check caption, picture and extract both for processing
+# Twitter => Check twitter posts

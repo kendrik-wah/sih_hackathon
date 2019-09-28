@@ -1,25 +1,29 @@
 from bs4 import BeautifulSoup
 import json, random, re, requests
 import pyfacebook
-import facebook
 
-graph_uri = 'https://graph.facebook.com'
-app_id = '1674160456050056'
-app_secret = 'f24802e319591fbfe076f66a314963fa'
-access_token = 'EAAXyo9tHpYgBAPqGyTyUZB5TVkOCDZCl6DZA8jXJpKTxQ3ZBzU3JiBFWAe1MkZCMHNM9YAQThfKRRjotjSIaAw7uRshLK6jfDBBFcNDcLhesYjYWa1ZB4hMAOcs4c3uDOXfD76LlSsmn4zaRhW19MR2epi5UyLBLuX5hbto5BjWmjZAmcyXcguf'
+class FacebookScrape(object):
+    def __init__(self):
+        self.app_id = '376395939967416'
+        self.app_secret = '52edfbb8fb4f9c59a64613b81b5efc9a'
+        self.app_token = '376395939967416|ewOGBPPoLg5F0pWHY3qkiaOKS1A'
+        self.access_token = 'EAAFWVIJL8bgBAKksiJKDzXDTXZBzmZAfjpPwGL9sLvzgSy2I5OdngerWMbWESlFBQc2rlsLADLq7opHOViOSX4jJU0IQlHL8KZAguRVnlgwgdH7SVK9XQrFzuClK2ZCACxzvxzbwAfkYhdsUzDyaLI17nrgCmSL70NnvxzRGZBFgB3CtnIoTA'
+        self.graph = pyfacebook.Api(long_term_token=self.access_token)
+        self.username = ''
 
-graph = facebook.GraphAPI()
+    def get_default(self):
+        result = requests.get
 
-app_token = graph.get_app_access_token(app_id, app_secret)
-print(app_token)
+    def get_posts(self, username):
+        self.username = username
+        feed = self.graph.get_posts(username=self.username, return_json=True)
+        return feed
 
-extended = facebook.GraphAPI(access_token)
-print(extended)
 
-extended.extend_access_token(app_id, app_secret)
+test = FacebookScrape()
+x = test.get_posts('depression')
+print(x)
 
-req = requests.get(graph_uri + '/me' + '&access_token=' + access_token)
-print(req.json())
 
-# result = extended.get_object()
-# print(result)
+
+

@@ -24,7 +24,12 @@ class InstagramScrape(object):
             else:
                 media = [entry]
             carousel_parent_id = entry['id']
-            text = entry['caption']['text']
+
+            if not entry['caption'] is None:
+                text = entry['caption']['text']
+            else:
+                text = ''
+
             user_id = entry['caption']["user_id"]
             username = entry['user']['username']
             full_name = entry['user']['full_name']
@@ -35,12 +40,13 @@ class InstagramScrape(object):
                     if not i % 2:
                         url = images[i]["url"]
                         image = {"carousel_parent_id": carousel_parent_id,
-                                 "user_id": user_id,
+                                 "id": user_id,
                                  "username": username,
                                  "full_name": full_name,
                                  "media_id": media_id,
                                  "url": url,
                                  "text": text}
+
                         result.append(image)
         return result
 
@@ -196,15 +202,36 @@ class InstagramScrape(object):
                         instagram_results[mental_illness].append(search_result)
 
             print(instagram_results[mental_illness])
-            filename = 'instagram_' + mental_illness + '.json'
-            with open(filename, 'w', encoding='utf-8') as f:
-                json.dump(instagram_results, f)
 
-            print("complete handling Instagram information.")
+        return instagram_results
+# filename = 'instagram_' + mental_illness + '.json'
+# with open(filename, 'w', encoding='utf-8') as f:
+#     json.dump(instagram_results, f)
+#
+# print("complete handling Instagram information.")
+
+    def scrape_self(self):
+        results = self.get_self_feed()
+        return results
+
+    def save_self_scraped_information(self):
+        results = self.scrape_self()
+
+        filename = 'instagram_' + self.username + '.json'
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(results, f)
 
 
 # Do this:
-# 1) search_results for a mental illness.
-# 2) for each result in results, get result feed and stories
-# 3) get comments in each result and results
-# 4) write somewhere (i think either a txt or csv?)
+# 1) Detect post.
+# 2) Caption and picture.
+# 3) Get the image out.
+# 4) Process the image
+
+# For user posts
+# 1st run ==> Get last 50 posts if possible.
+# 2nd run onwards ==> Get last 3 posts.
+# Run weekly
+
+# For user likes
+# Get liked posts once every 4 hours.
