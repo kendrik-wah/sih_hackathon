@@ -117,7 +117,9 @@ class Account(object):
                     online_url = media.split("/")[6].split("?")
                     img_url = online_url[0]
                     save_path = path + img_url
-                    urllib.request.urlretrieve(online_url, save_path)
+                    print(media)
+                    print(save_path)
+                    urllib.request.urlretrieve(media, save_path)
                     img = Image.open(save_path)
                     attempt_text = pytesseract.image_to_string(img)
 
@@ -169,7 +171,7 @@ class Account(object):
                     online_url = media.split("/")[4]
                     img_url = online_url[0]
                     save_path = path + img_url
-                    urllib.request.urlretrieve(online_url, save_path)
+                    urllib.request.urlretrieve(media, save_path)
                     img = Image.open(save_path)
                     attempt_text = pytesseract.image_to_string(img)
                     if attempt_text != '' or attempt_text is not None:
@@ -192,7 +194,7 @@ class Account(object):
 acc = Account()
 # acc.log_into_instagram("xxxxxxxxxx", "xxxxxxxxxxx")
 # acc.extract_from_instagram_offline()
-# extracted_instagram = acc.analyze_instagram_feed('insert json file here')
+extracted_instagram = acc.analyze_instagram_feed('instagram_kendrikwah.json')
 # acc.log_into_twitter("depressingmsgs")
 # acc.extract_from_twitter_offline()
 # extracted_twitter = acc.analyze_twitter_feed('insert json file here')
