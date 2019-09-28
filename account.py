@@ -48,7 +48,7 @@ def get_reddit_json(file):
     return data
 
 def clean_tweet(tweet):
-    return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)"," ", tweet).split())
+    return ' '.join(re.sub("(@(\w+))|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|((http|https|ftp)://[a-zA-Z0-9\\./]+)|(#(\w+))"," ", tweet).split())
 
 class Account(object):
     def __init__(self):
@@ -98,11 +98,9 @@ class Account(object):
             tokenized_text = tokenize.sent_tokenize(text)
 
             for txt in tokenized_text:
-                print('text: ', txt)
                 if txt not in existing_text:
                     if txt is not None:
                         ss = sid.polarity_scores(txt)
-                        print('results: ', ss)
                         if ss['compound'] < 0:
                             summary_text['negative'] = summary_text['negative'] + 1
                         elif ss['compound'] == 0:
@@ -117,15 +115,12 @@ class Account(object):
                     online_url = media.split("/")[6].split("?")
                     img_url = online_url[0]
                     save_path = path + img_url
-                    print(media)
-                    print(save_path)
                     urllib.request.urlretrieve(media, save_path)
                     img = Image.open(save_path)
                     attempt_text = pytesseract.image_to_string(img)
 
                     if len(attempt_text) > 0:
                         ss = sid.polarity_scores(attempt_text)
-                        print('results: ', ss)
                         if ss['compound'] < 0:
                             summary_text['negative'] = summary_text['negative'] + 1
                         elif ss['compound'] == 0:
@@ -135,8 +130,14 @@ class Account(object):
 
                         existing_text.append(attempt_text)
 
-
                     existing_media.append(media)
+
+        total = 0
+        for base in list(summary_text.keys()):
+            total += summary_text[base]
+
+        for base in list(summary_text.keys()):
+            summary_text[base] = round(summary_text[base]/total, 2)
 
         return summary_text
 
@@ -155,8 +156,6 @@ class Account(object):
                 if text is not None:
                     text = clean_tweet(text)
                     ss = sid.polarity_scores(text)
-                    print(text)
-                    print(ss)
                     if ss['compound'] < 0:
                         summary_text['negative'] = summary_text['negative'] + 1
                     elif ss['compound'] == 0:
@@ -176,7 +175,6 @@ class Account(object):
                     attempt_text = pytesseract.image_to_string(img)
                     if attempt_text != '' or attempt_text is not None:
                         ss = sid.polarity_scores(attempt_text)
-                        print('results: ', ss)
                         if ss['compound'] < 0:
                             summary_text['negative'] = summary_text['negative'] + 1
                         elif ss['compound'] == 0:
@@ -188,22 +186,42 @@ class Account(object):
 
                     existing_media.append(media)
 
+        total = 0
+        for base in list(summary_text.keys()):
+            total += summary_text[base]
+
+        for base in list(summary_text.keys()):
+            summary_text[base] = round(summary_text[base]/total, 2)
+
         return summary_text
+
+    def determine_risk(self, summarized_percentages):
+        if 0.10 <= summarized_percentages['negative'] <= 0.19:
+            return 'Low risk'
+        elif 0.2 <= summarized_percentages['negative'] <= 0.34:
+            return 'Medium risk'
+        elif 0.35 <= summarized_percentages['negative'] <= 0.49:
+            return 'High risk'
+        elif summarized_percentages['negative'] >= 0.5:
+            return 'Very high risk'
+        else:
+            return 'No risk'
 
 
 acc = Account()
 # acc.log_into_instagram("xxxxxxxxxx", "xxxxxxxxxxx")
 # acc.extract_from_instagram_offline()
-extracted_instagram = acc.analyze_instagram_feed('instagram_kendrikwah.json')
+extracted_instagram = acc.determine_risk(acc.analyze_instagram_feed('instagram_kendrikwah.json'))
 # acc.log_into_twitter("depressingmsgs")
 # acc.extract_from_twitter_offline()
-# extracted_twitter = acc.analyze_twitter_feed('insert json file here')
+extracted_twitter = acc.determine_risk(acc.analyze_twitter_feed('twitter_depressingmsgs.json'))
 
-# print(extracted_instagram)
-# print(extracted_twitter)
+print('Instagram:', extracted_instagram)
+print('Twitter:', extracted_twitter)
 #
 #    Pipeline will work like this:
 # 1) Get credentials of users (username and password for Instagram, username for Twitter)
 # 2) Upon login, can immediately do extract_from_instagram() and extract_from_twitter()
 # 3) After doing extraction, use analyze_instagram_feed() and analyze_twitter_feed() (use offline methods if you wish to extract via json instead)
 #    These analyze methods will have the NLP and image-to-string codes inside.
+# 4) use determine_risk() to find out the person's risk of getting depression!
