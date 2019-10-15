@@ -72,7 +72,7 @@ path = r"C:\Users\kendrik\Pictures\Saved Pictures" + "\\" + img_name
 
 urllib.request.urlretrieve(url, path)
 
-im = Image.open(r"C:\Users\kendrik\Pictures\Saved Pictures\depress.jpg")
+im = Image.open(r"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 text = pytesseract.image_to_string(im, lang='eng')
 
